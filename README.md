@@ -1,6 +1,10 @@
 # Devopsery
 Scripts and stuff that I've used for the devops-y parts of my job. You might find them useful as well!
 
+#### Be warned
+
+Some of these (Nexus3_API.ps1 currently) won't work out of the box. You'll have to change things around, or figure out how to use the functions yourself to get it working. These scripts are a nice backbone to get started from.
+
 ## [tag.sh](https://github.com/huffstler/Devopsery/blob/master/tag.sh)
 (For use with gitlab and maven based java projects)
 
