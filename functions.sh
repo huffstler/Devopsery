@@ -1,4 +1,4 @@
-# These are some useful functions to have sources in whatever shell you use.
+# These are some useful functions to have sourced in whatever shell you use.
 # I use zsh, so no promises that they work on bash or fish
 
 # used to invoke sudo on previous command
