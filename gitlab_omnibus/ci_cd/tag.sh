@@ -3,7 +3,14 @@ set -u
 
 group_commit_msgs() {
 
-    PREV_TAG=$(git describe --abbrev=0 --tags)
+    STATUS=$(git tag -l)
+
+    if [ -z "$STATUS" ]
+    then
+        PREV_TAG=$(git rev-list --max-parents=0 HEAD)
+    else
+        PREV_TAG=$(git describe --abbrev=0 --tags)
+    fi
 
     RESULT=$(git log --format='@%an% h<br>Title: %s<br>Body: %b<br><br>' "$PREV_TAG"...HEAD | tr -d '\n')
 
