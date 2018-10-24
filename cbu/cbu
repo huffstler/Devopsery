@@ -79,7 +79,7 @@ if [[ -n "$container"  && -n "$destination" ]]; then
 fi
 
 if [[ -n "$volume" && -n "$destination" ]]; then
-    volume_source=$(docker inspect "$volume" --format="{{.Mountpoint}}")
+    volume_source=$(docker volume inspect "$volume" --format="{{.Mountpoint}}")
     echo "Archiving $volume_source to $destination"
     tar cvf $destination $volume_source
 fi
