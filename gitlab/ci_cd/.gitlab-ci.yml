@@ -1,0 +1,88 @@
+variables:
+  MVN_CLI_OPT: "--batch-mode"
+  GROUP_ID: ""
+  ARTIFACT_ID: ""
+  PROJECT_VERSION: ""
+
+before_script:
+  - chmod -R +x .ci
+  - source .ci/set_vars.sh
+
+stages:
+  - test
+  - package
+  - upload
+  - tag
+  - deploy
+  
+test-app:
+  stage: test
+  artifacts:
+    paths:
+    - target/*
+  script:
+    - mvn $MVN_CLI_OPT test
+  except:
+    - tags
+
+package-app:
+  stage: package
+  dependencies:
+    - test-app
+  artifacts:
+    paths:
+    # Matches any file that ends with war or jar.
+    - target/*.jar
+    - target/*.war
+    - target/*.zip
+    expire_in: 2 days
+  script:
+    - mvn $MVN_CLI_OPT package 
+  except:
+    - tags
+
+upload:
+  stage: upload
+  script:
+    - mvn $MVN_CLI_OPT deploy
+  dependencies:
+    - package-app
+  only:
+    - master
+  
+tag-version:
+  stage: tag
+  script:
+    - .ci/tag.sh
+  only:
+    - master
+ 
+.deploy_template: &deploy-template
+  before_script:
+    - ""
+  stage: deploy
+  script:
+    - .ci/deploy.ps1 -hostname $LOCATION -debug
+  tags:
+    - pwsh
+  when: manual
+
+deploy-snapshot:
+  <<: *deploy-template
+  environment:
+    name: snapshot
+  variables:
+    LOCATION: ${TEST_ENV}
+  except:
+    - master
+    - tags
+  
+deploy-release:
+  <<: *deploy-template
+  environment:
+    name: production
+  variables:
+    LOCATION: ${PROD_ENV}
+  only:
+    - master
+
