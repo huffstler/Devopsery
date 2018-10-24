@@ -1,21 +1,21 @@
 #!/bin/bash
 
-version="0.1.4"
+version="0.1.5"
 
 print_h() {
 cat << EOM
 Usage: 
-    cbu -c containerName -d /path/to/backup/storage
-    cbu -v volumeName -d /path/to/backup/storage
+    cbu -c containerName -d /path/to/backup/storage.tar
+    cbu -v volumeName -d /path/to/backup/storage.tar
     
-    cbu --container containerName --destination /path/to/backup/storage
-    cbu --volume volumeName --destination /path/to/backup/storage
+    cbu --container containerName --destination /path/to/backup/storage.tar
+    cbu --volume volumeName --destination /path/to/backup/storage.tar
 
 Options: 
     -c, --container     : The containers that you'll be backing up. 
             Warning: You will be backing up EVERY VOLUME associated with this container. 
             If you want more control, use the -v option.
-    -d, --destination   : The location that you'll be storing the backups. Must be a directory, not filename.
+    -d, --destination   : The location that you'll be storing the backups. Must include filename.
     -v, --volume        : The volume that you want to backup
     -h, --help          : display this help message
     -V                  : The version of the program
