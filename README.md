@@ -10,7 +10,7 @@ Some of these won't work out of the box. You'll have to change things around, or
 | Script | Runtime Deps | ENV Deps | 
 | ------ | ------------ | -------- |
 | `cbu`    | `docker`,`tar`,`bash`,| N/A |
-| `[tag.sh][1]` | `git`,`tr`,`curl`,`grep`,`bash` | `$PROJECT_VERSION` |
+| [`tag.sh`][1] | `git`,`tr`,`curl`,`grep`,`bash` | `$PROJECT_VERSION` |
 | `set_vars.sh` | `mvn`, `bash` | N/A |
 
 [1]: https://github.com/huffstler/Devopsery/blob/master/gitlab/ci_cd/tag.sh
