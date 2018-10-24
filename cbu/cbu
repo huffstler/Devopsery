@@ -1,0 +1,92 @@
+#!/bin/bash
+
+version="0.1.4"
+
+print_h() {
+cat << EOM
+Usage: 
+    cbu -c containerName -d /path/to/backup/storage
+    cbu -v volumeName -d /path/to/backup/storage
+    
+    cbu --container containerName --destination /path/to/backup/storage
+    cbu --volume volumeName --destination /path/to/backup/storage
+
+Options: 
+    -c, --container     : The containers that you'll be backing up. 
+            Warning: You will be backing up EVERY VOLUME associated with this container. 
+            If you want more control, use the -v option.
+    -d, --destination   : The location that you'll be storing the backups. Must be a directory, not filename.
+    -v, --volume        : The volume that you want to backup
+    -h, --help          : display this help message
+    -V                  : The version of the program
+EOM
+}
+
+if [[ "$#" -eq 1 && "$1" =~ "-h" ]]; then
+    print_h
+    exit 0
+elif [[ "$#" -eq 1 && "$1" =~ "-V" ]]; then
+    echo "$version"
+    exit 0
+elif [[ "$EUID" != 0 ]]; then
+    echo "This needs to be run as root, use sudo."
+    exit 1
+elif [[ "$#" -lt "2" ]]; then
+    echo "Not enough arguments!"
+    print_h
+    exit 1
+elif [[ ! "$@" =~ "-d" ]]; then
+    echo "You need to specify the output directory of the backup!"
+    print_h
+    exit 1
+else
+    while :
+    do
+        case "$1" in 
+            -c | --container)
+                container="$2"
+                if [[ ! "$(docker ps -a --format="{{.Names}}")" =~ $container ]]; then
+                    echo "$container doesn't exist." 1>&2
+                    echo "Please provide a valid container name." 1>&2
+                    exit 1
+                fi; shift 2;;
+            -d | --destination)
+                destination="$2"
+                if [[ -f "$destination" ]]; then
+                    echo "$destination already exists. Please provide a file that doesn't exist yet." 1>&2
+                    exit 1
+                fi; shift 2;;
+             -v | --volume)
+                volume="$2"
+                if [[ ! $(docker volume ls --format="{{.Name}}") =~ $volume ]]; then
+                    echo "$volume doesn't exist." 1>&2
+                    echo "Please provide a valid volume name." 1>&2
+                    exit 1
+                fi; shift 2;;
+            --) shift; break;;
+            -*) echo "Error: Unknown option: $1" >&2; exit 1;;
+            *)  break;;
+        esac
+    done
+fi
+
+date "+Backup started on %F"
+
+if [[ -n "$container"  && -n "$destination" ]]; then
+    vol_list=$(docker inspect --format '{{range $map := .Mounts}} {{if eq .Type "volume"}} {{$map.Source}} {{end}} {{end}}' "$container")
+    echo "Archiving $vol_list to $destination"
+    tar cvf $destination $vol_list
+fi
+
+if [[ -n "$volume" && -n "$destination" ]]; then
+    volume_source=$(docker inspect "$volume" --format="{{.Mountpoint}}")
+    echo "Archiving $volume_source to $destination"
+    tar cvf $destination $volume_source
+fi
+
+if [[ "$?" -eq 0 ]]; then
+    echo "Backup procedure complete!"
+else
+    echo "Procedure failed. Error code: $?"
+fi
+
